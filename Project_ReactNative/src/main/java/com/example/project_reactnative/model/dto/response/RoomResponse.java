@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class RoomResponse {
     private Long id;
+    private Long hotelId;
     private String title;
     private String imageUrl;
     private String hotelName;

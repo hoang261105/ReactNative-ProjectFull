@@ -19,6 +19,12 @@ export const getRoomById = async (id: number) => {
     return response.data;
 }
 
+// Hàm lấy chi tiết 1 hình ảnh
+export const getImageById = async (imageId: number, roomId: number) => {
+    const response = await axiosInstance.get(`/rooms/${roomId}/images/${imageId}`);
+    return response.data;
+}
+
 // Hàm lấy danh sách phòng theo khách sạn
 export const getRoomsByHotel = async (hotelId: number, rangePrice: RangePrice, sortBy: string) => {
     const params = new URLSearchParams();

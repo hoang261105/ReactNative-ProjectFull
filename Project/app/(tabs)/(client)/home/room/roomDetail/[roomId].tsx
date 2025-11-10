@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -11,19 +11,21 @@ import {
 } from "react-native";
 
 // Import các bộ icon cần thiết
-import { getRoomById } from "@/apis/room.api";
+import DateSelectionModal from "@/components/item/CalendarModal";
+import GuestSelectionModal from "@/components/item/GuestSelectionModal";
+import StarRating from "@/components/item/StarRating";
+import { useReviews } from "@/hooks/useReviews";
+import { useRoomById } from "@/hooks/useRooms";
 import { RoomImage } from "@/interface/room";
 import {
   Feather,
-  FontAwesome,
   Ionicons,
   MaterialCommunityIcons,
   MaterialIcons,
 } from "@expo/vector-icons";
-import { useQuery } from "@tanstack/react-query";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-
 
 // --- Kết thúc dữ liệu giả ---
 
@@ -56,15 +58,19 @@ const FeatureHighlight = ({ iconName, library, title, text }: any) => {
 
 export default function HotelDetailScreen() {
   const router = useRouter();
-  const { roomId } = useLocalSearchParams();
+  const { roomId, hotelId } = useLocalSearchParams();
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [isGuestModalVisible, setGuestModalVisible] = useState(false);
 
-  const { data: room, isLoading } = useQuery({
-    queryFn: async () => {
-      const response = await getRoomById(+roomId);
-      return response.data;
-    },
-    queryKey: ["room"],
-  });
+  const { data: room, isLoading } = useRoomById(+roomId);
+
+  const { data: reviews } = useReviews(+hotelId, +roomId);
+
+  const averageRating =
+    reviews && reviews.length > 0
+      ? reviews.reduce((sum: number, r: any) => sum + r.rating, 0) /
+        reviews.length
+      : 0;
 
   if (isLoading) {
     return (
@@ -75,6 +81,16 @@ export default function HotelDetailScreen() {
     );
   }
 
+  const handleReview = () => {
+    router.push({
+      pathname: "/home/room/roomDetail/review",
+      params: {
+        hotelId: hotelId,
+        roomId: +roomId,
+      },
+    });
+  };
+
   return (
     // Dùng SafeAreaView cho toàn bộ màn hình
     <SafeAreaView className="flex-1 bg-white">
@@ -84,7 +100,7 @@ export default function HotelDetailScreen() {
       <ScrollView
         className="flex-1"
         // Thêm padding ở dưới cùng để cuộn không bị che bởi footer
-        contentContainerStyle={{ paddingBottom: 120 }}
+        contentContainerStyle={{ paddingBottom: 40 }}
       >
         {/* --- Ảnh Header --- */}
         <ImageBackground
@@ -110,15 +126,18 @@ export default function HotelDetailScreen() {
         {/* --- Thẻ nội dung trắng (kéo đè lên ảnh) --- */}
         <View className="bg-white rounded-t-3xl -mt-10 p-6">
           {/* Rating */}
-          <View className="flex-row items-center">
-            <FontAwesome name="star" size={16} color="#F59E0B" />
-            <FontAwesome name="star" size={16} color="#F59E0B" />
-            <FontAwesome name="star" size={16} color="#F59E0B" />
-            <FontAwesome name="star" size={16} color="#F59E0B" />
-            <FontAwesome name="star" size={16} color="#F59E0B" />
-            <Text className="text-sm font-bold text-gray-700 ml-2">5.0</Text>
-            <Text className="text-sm text-gray-500 ml-1.5">(120 Reviews)</Text>
-          </View>
+          <TouchableOpacity
+            className="flex-row items-center"
+            onPress={handleReview}
+          >
+            <StarRating rating={averageRating} size={20} />
+            <Text className="text-sm font-bold text-gray-700 ml-2">
+              {averageRating.toFixed(1)}
+            </Text>
+            <Text className="text-sm text-gray-500 ml-1.5">
+              ({reviews?.length || 0} lượt đánh giá)
+            </Text>
+          </TouchableOpacity>
 
           {/* Tên khách sạn */}
           <Text className="text-3xl font-bold text-gray-900 mt-2">
@@ -145,12 +164,14 @@ export default function HotelDetailScreen() {
           <View className="flex-row justify-between items-center mt-6">
             <Text className="text-xl font-bold text-gray-900">Photos</Text>
             <TouchableOpacity
-              onPress={() => router.push({
-                pathname: "/home/room/roomDetail/imageDetail",
-                params: {
-                  roomId: +roomId
-                }
-              })}
+              onPress={() =>
+                router.push({
+                  pathname: "/home/room/roomDetail/images",
+                  params: {
+                    roomId: +roomId,
+                  },
+                })
+              }
             >
               <Text className="text-sm font-medium text-blue-600">See All</Text>
             </TouchableOpacity>
@@ -187,7 +208,10 @@ export default function HotelDetailScreen() {
                 {room?.bedCount} giường • {room?.bathRoomCount} phòng tắm
               </Text>
             </View>
-            <Image source={{ uri: room.images[0]?.imageURL }} className="w-14 h-14 rounded-full" />
+            <Image
+              source={{ uri: room.images[0]?.imageURL }}
+              className="w-14 h-14 rounded-full"
+            />
           </View>
 
           {/* Dấu gạch ngang */}
@@ -222,7 +246,7 @@ export default function HotelDetailScreen() {
       </ScrollView>
 
       {/* --- 2. Footer (Dính ở dưới cùng) --- */}
-      <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200">
+      <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200" style={{ bottom: -30 }}>
         <SafeAreaView edges={["bottom"]}>
           <View className="flex-row justify-between items-center px-6 pt-6">
             {/* Giá tiền */}
@@ -238,14 +262,40 @@ export default function HotelDetailScreen() {
               </Text>
             </View>
             {/* Nút bấm */}
-            <TouchableOpacity className="bg-blue-600 px-8 py-3 rounded-lg">
-              <Text className="text-white text-base font-bold">
-                Chọn ngày
-              </Text>
+            <TouchableOpacity
+              className="bg-blue-600 px-8 py-3 rounded-lg"
+              onPress={() => setModalVisible(true)}
+            >
+              <Text className="text-white text-base font-bold">Chọn ngày</Text>
             </TouchableOpacity>
           </View>
         </SafeAreaView>
       </View>
+
+      <DateSelectionModal
+        isVisible={isModalVisible}
+        onClose={() => setModalVisible(false)}
+        onConfirm={async () => {
+          setModalVisible(false);
+          setGuestModalVisible(true);
+        }}
+      />
+
+      <GuestSelectionModal
+        isVisible={isGuestModalVisible}
+        onClose={() => setGuestModalVisible(false)}
+        onNext={async () => {
+          await AsyncStorage.setItem("totalPrice", JSON.stringify(room.price))
+          router.push({
+            pathname: "/(tabs)/(client)/home/room/roomDetail/payment",
+            params: {
+              roomId: roomId,
+              hotelId: hotelId,
+            },
+          });
+          setGuestModalVisible(false);
+        }}
+      />
     </SafeAreaView>
   );
 }

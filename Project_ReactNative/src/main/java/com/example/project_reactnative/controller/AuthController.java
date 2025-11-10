@@ -16,6 +16,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthController {
@@ -29,7 +33,20 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<APIResponse<JWTResponse>> login(@Valid @RequestBody UserLogin userLogin){
-        JWTResponse user = authService.login(userLogin);
-        return new ResponseEntity<>(new APIResponse<>(true, "Đăng nhập thành công!", user), HttpStatus.OK);
+        JWTResponse jwt = authService.login(userLogin);
+
+        if (jwt == null) {
+            Map<String, String> errors = new HashMap<>();
+            errors.put("password", "Email hoặc mật khẩu không đúng!");
+            APIResponse<JWTResponse> response = new APIResponse<>(
+                    false,
+                    "Đăng nhập thất bại",
+                    null,
+                    errors,
+                    LocalDateTime.now()
+            );
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(new APIResponse<>(true, "Đăng nhập thành công!", jwt), HttpStatus.OK);
     }
 }

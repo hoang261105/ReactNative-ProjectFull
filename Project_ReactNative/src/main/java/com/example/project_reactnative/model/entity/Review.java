@@ -2,6 +2,7 @@ package com.example.project_reactnative.model.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@Builder
 public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,11 +31,11 @@ public class Review {
     @JoinColumn(name = "room_id", referencedColumnName = "id")
     private Room room;
 
-    private double rating;
+    private int rating;
 
     private String comment;
 
-    private LocalDate commentDate;
+    private LocalDate commentDate = LocalDate.now();
 
     private LocalDateTime createdAt;
 }

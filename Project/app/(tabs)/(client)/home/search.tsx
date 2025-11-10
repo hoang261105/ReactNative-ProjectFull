@@ -1,8 +1,7 @@
-import { getRoomsByName } from "@/apis/room.api";
 import RoomCard from "@/components/item/RoomCard";
+import { useSearchRooms } from "@/hooks/useSearchRooms";
 import { RoomResponse } from "@/interface/room";
-import { Feather, Ionicons } from "@expo/vector-icons";
-import { useQuery } from "@tanstack/react-query";
+import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -69,13 +68,7 @@ export default function SearchScreen() {
     data: rooms,
     isLoading,
     isError,
-  } = useQuery({
-    queryFn: async () => {
-      const response = await getRoomsByName(debouncedKeyboard);
-      return response.data;
-    },
-    queryKey: ["rooms", debouncedKeyboard],
-  });
+  } = useSearchRooms(debouncedKeyboard);
 
   const handlePress = (roomId: number) => {
     router.push({
@@ -85,6 +78,10 @@ export default function SearchScreen() {
       },
     });
   };
+
+  const handleClear = () => {
+    setKeyboard("");
+  }
 
   const renderContent = () => {
     if (isLoading) {
@@ -139,18 +136,10 @@ export default function SearchScreen() {
             name="x"
             size={24}
             color="#333"
-            onPress={() => router.push("/(tabs)/(client)/home")}
+            onPress={handleClear}
           />
         </TouchableOpacity>
       </View>
-
-      {/* --- 2. Nút "Use my location" --- */}
-      <TouchableOpacity className="flex-row items-center p-4 mx-4 mt-2">
-        <Ionicons name="locate-outline" size={24} color="#504DE4" />
-        <Text className="text-indigo-600 text-base font-medium ml-3">
-          or use my current location
-        </Text>
-      </TouchableOpacity>
 
       {/* --- 3. Nội dung cuộn (Danh sách) --- */}
       <View className="flex-1 mt-2">

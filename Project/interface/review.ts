@@ -12,3 +12,20 @@ export interface Review {
   commentDate: string; 
   createdAt: string;
 }
+
+export interface ReviewResponse {
+  id: number;
+  fullName: string;
+  avatar: string;
+  comment?: string; 
+  commentDate: string; 
+  rating: number
+}
+
+export interface ReviewRequest{
+  hotelId?: number;
+  roomId?: number;
+  userId?: number;
+  rating: number;
+  comment: string;
+}

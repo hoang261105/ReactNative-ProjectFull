@@ -1,5 +1,5 @@
 import { registerUser } from "@/apis/auth.api";
-import { UserRequest } from "@/interface/interface";
+import { UserRequest } from "@/interface/user";
 import { Feather } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useMutation } from "@tanstack/react-query";
@@ -22,12 +22,9 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const regexEmail = /^[a-zA-Z0-9._]+@[a-zA-Z0-9]+\.[a-zA-Z]{2,6}$/;
-const regexPhone = /^(0(3|5|7|8|9)\d{8}|\+84(3|5|7|8|9)\d{8})$/;
-
 export default function RegisterScreen() {
   const router = useRouter();
-  const [show, setShow] = useState(true);
+  const [show, setShow] = useState(false);
   const [date, setDate] = useState(new Date());
 
   const [inputValue, setInputValue] = useState<UserRequest>({

@@ -23,6 +23,7 @@ export interface RoomImage {
 
 export interface RoomResponse{
   id: number;
+  hotelId: number;
   imageUrl: string; 
   title: string;
   hotelName: string;

@@ -11,5 +11,6 @@ public interface AuthRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email);
     boolean existsByPhoneNumber(String phoneNumber);
     Optional<User> findByEmail(String email);
-    User findByPhoneNumber(String phoneNumber);
+    boolean existsByEmailAndIdNot(String email, Long id);
+    boolean existsByPhoneNumberAndIdNot(String phoneNumber, Long id);
 }

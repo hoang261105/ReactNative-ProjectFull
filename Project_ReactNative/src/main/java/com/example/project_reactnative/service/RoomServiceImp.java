@@ -11,13 +11,12 @@ import com.example.project_reactnative.model.entity.RoomImage;
 import com.example.project_reactnative.repository.FeatureRepository;
 import com.example.project_reactnative.repository.RoomImageRepository;
 import com.example.project_reactnative.repository.RoomRepository;
+import com.example.project_reactnative.security.exception.CustomValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Comparator;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 @Service
 public class RoomServiceImp implements RoomService {
@@ -55,6 +54,18 @@ public class RoomServiceImp implements RoomService {
     public List<RoomResponse> getRoomsByPriceAndSort(Long hotelId, RangePrice rangePrice, String sort) {
         List<Room> rooms;
 
+        Map<String, String> errors = new HashMap<>();
+
+        if (rangePrice.getMinPrice() != null && rangePrice.getMaxPrice() != null) {
+            if (rangePrice.getMinPrice().compareTo(rangePrice.getMaxPrice()) > 0) {
+                errors.put("maxPrice", "Giá tối thiểu phải nhỏ hơn giá tối đa");
+            }
+        }
+
+        if (!errors.isEmpty()) {
+            throw new CustomValidationException(errors);
+        }
+
         if (rangePrice.getMinPrice() != null || rangePrice.getMaxPrice() != null) {
             rooms = roomRepository.findRoomsByHotelIdAndPriceGreaterThanEqualAndPriceLessThanEqual(hotelId, rangePrice.getMinPrice(), rangePrice.getMaxPrice());
         } else {
@@ -83,6 +94,12 @@ public class RoomServiceImp implements RoomService {
                 .map(this::convertToDTO).toList();
     }
 
+    @Override
+    public RoomImageResponse getImageById(Long imageId, Long roomId) {
+        RoomImage roomImage = roomImageRepository.findRoomImageByIdAndRoomId(imageId, roomId);
+        return convertToImageResponse(roomImage);
+    }
+
     public RoomResponse convertToDTO(Room room) {
         if (room == null) return null;
 
@@ -90,6 +107,7 @@ public class RoomServiceImp implements RoomService {
 
         return new RoomResponse(
                 room.getId(),
+                room.getHotel().getId(),
                 room.getTitle(),
                 images.get(0).getImageUrl(),
                 room.getHotel().getHotelName(),

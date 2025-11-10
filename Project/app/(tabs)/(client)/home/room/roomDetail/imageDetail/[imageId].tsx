@@ -1,5 +1,7 @@
+import { getImageById } from '@/apis/room.api';
 import { Feather } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import {
   Image,
@@ -15,6 +17,17 @@ const bedroomImage = {
 
 export default function ImageModalScreen() {
   const router = useRouter(); 
+  const {imageId, roomId} = useLocalSearchParams();
+
+  const {
+    data: photo
+  } = useQuery({
+    queryFn: async () => {
+      const response = await getImageById(+imageId, +roomId);
+      return response.data;
+    },
+    queryKey: ["image"]
+  })
 
   return (
     <SafeAreaView className="flex-1 bg-black">
@@ -31,8 +44,8 @@ export default function ImageModalScreen() {
 
       <View className="flex-1 justify-center">
         <Image
-          source={bedroomImage}
-          className="w-full h-[60%]" 
+          source={{uri: photo?.imageURL}}
+          className={`w-full ${photo?.size === "large" ? "h-64" : "h-56"}`}
           resizeMode="cover" 
         />
       </View>

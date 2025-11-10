@@ -12,9 +12,9 @@ import {
   View,
 } from "react-native";
 // Import các bộ icon cần thiết
-import { getHotelById } from "@/apis/hotel.api";
-import { getRoomsByHotel } from "@/apis/room.api";
 import RoomCard from "@/components/item/RoomCard";
+import { useHotelById } from "@/hooks/useHotels";
+import { useFilterRooms } from "@/hooks/useRooms";
 import { RangePrice, RoomResponse } from "@/interface/room";
 import {
   AntDesign,
@@ -22,7 +22,6 @@ import {
   Ionicons,
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
-import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -87,6 +86,7 @@ export default function RoomScreen() {
     minPrice: 0,
     maxPrice: 0,
   });
+  const [priceError, setPriceError] = useState("");
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
@@ -96,56 +96,48 @@ export default function RoomScreen() {
     setModalVisiblePrice(!isModalVisiblePrice);
   };
 
-  const { data: rooms } = useQuery({
-    queryFn: async () => {
-      const response = await getRoomsByHotel(+hotelId, rangePrice,selectedSort);
-      return response.data;
-    },
-    queryKey: ["rooms", +hotelId, rangePrice, selectedSort],
-  });
+  const { data: rooms } = useFilterRooms(+hotelId, rangePrice, selectedSort);
 
-  const { data: hotel } = useQuery({
-    queryFn: async () => {
-      const response = await getHotelById(+hotelId);
-      return response.data;
-    },
-    queryKey: ["hotel"],
-  });
+  const { data: hotel } = useHotelById(+hotelId);
 
   const handlePress = (roomId: number) => {
     router.push({
       pathname: "/(tabs)/(client)/home/room/roomDetail/[roomId]",
       params: {
         roomId: roomId,
+        hotelId: hotelId,
       },
     });
   };
 
   const handleChange = (field: string, value: string) => {
-    const numericValue = parseInt(value, 10);
+    const numericValue = value === "" ? 0 : parseInt(value, 10);
 
-  // 3. Xử lý các trường hợp
-  if (value === "") {
-    // Nếu người dùng xóa hết, set giá trị về 0
-    setRangePrice({
-      ...rangePrice,
-      [field]: 0,
-    });
-  } else if (!isNaN(numericValue)) {
-    // Nếu là một số hợp lệ, cập nhật state
-    setRangePrice({
-      ...rangePrice,
+    if (isNaN(numericValue)) {
+      return;
+    }
+
+    const newMin = field === "minPrice" ? numericValue : rangePrice.minPrice;
+    const newMax = field === "maxPrice" ? numericValue : rangePrice.maxPrice;
+
+    if (newMax > 0 && newMin > newMax) {
+      setPriceError("Giá tối thiểu phải lớn hơn giá tối đa!");
+    } else {
+      setPriceError(""); 
+    }
+
+    setRangePrice((prevState) => ({
+      ...prevState,
       [field]: numericValue,
-    });
-  }
-  }
+    }));
+  };
 
   const renderSortItem = ({ item }: any) => {
-    const isSelected = selectedSort === item.sortBy; 
+    const isSelected = selectedSort === item.sortBy;
 
     const IconComponent =
       item.type === "name" ? AntDesign : MaterialCommunityIcons;
-    const iconName = item.icons;
+    const iconName = item.icon;
 
     return (
       <TouchableOpacity
@@ -257,7 +249,7 @@ export default function RoomScreen() {
         transparent={true}
         onRequestClose={togglePriceModal}
       >
-        <TouchableWithoutFeedback onPress={toggleModal}>
+        <TouchableWithoutFeedback onPress={togglePriceModal}>
           <View style={styles.backdrop} />
         </TouchableWithoutFeedback>
 
@@ -296,6 +288,9 @@ export default function RoomScreen() {
                   className="border border-gray-300 rounded-lg p-3 text-base text-gray-900"
                   onChangeText={(text) => handleChange("maxPrice", text)}
                 />
+                {
+                  priceError && <Text className="text-red-500 text-sm">{priceError}</Text>
+                }
               </View>
             </View>
 

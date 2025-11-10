@@ -1,6 +1,5 @@
-import { filterHotelsByProvinces } from "@/apis/hotel.api";
-import { getAllProvinces, getProvinceById } from "@/apis/province.api";
 import HotelCard from "@/components/item/HotelCard";
+import { useFilterProvinces, useProvinceById, useProvinces } from "@/hooks/useProvinces";
 import { HotelResponse } from "@/interface/hotel";
 import { ProvinceResponse } from "@/interface/province";
 import {
@@ -9,7 +8,6 @@ import {
   Ionicons,
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
-import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -100,36 +98,15 @@ export default function ListingScreen() {
     setLocalityModalVisible(!isLocalityModalVisible);
   };
 
-  const { data: province } = useQuery({
-    queryFn: async () => {
-      const response = await getProvinceById(+provinceId);
-      return response.data;
-    },
-    queryKey: ["province"],
-  });
+  const { data: province } = useProvinceById(+provinceId)
 
-  const { data: provinces } = useQuery({
-    queryFn: async () => {
-      const response = await getAllProvinces();
-      return response.data;
-    },
-    queryKey: ["provinces"],
-  });
+  const { data: provinces } = useProvinces();
 
   const {
     data: hotels,
     isLoading,
     isError,
-  } = useQuery({
-    queryFn: async () => {
-      const response = await filterHotelsByProvinces(
-        selectedProvinces,
-        selectedSort
-      );
-      return response.data;
-    },
-    queryKey: ["hotels", selectedProvinces, selectedSort],
-  });
+  } = useFilterProvinces(selectedProvinces, selectedSort);
 
   const handlePress = (hotelId: number) => {
     router.push({
@@ -311,13 +288,6 @@ export default function ListingScreen() {
                 );
               })}
             </ScrollView>
-
-            {/* Nút Show more */}
-            <TouchableOpacity className="mt-2">
-              <Text className="text-base font-medium text-blue-600">
-                Show more
-              </Text>
-            </TouchableOpacity>
 
             {/* Nút Clear All / Apply */}
             <View className="flex-row justify-between mt-6 pt-4 border-t border-gray-200">

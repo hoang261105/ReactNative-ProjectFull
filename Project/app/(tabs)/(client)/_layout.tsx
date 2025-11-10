@@ -1,8 +1,9 @@
-import { Feather, FontAwesome, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
-import { Tabs } from 'expo-router'
-import React from 'react'
+import { Feather, FontAwesome, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Tabs, useRouter } from 'expo-router';
+import React from 'react';
 
 export default function ClientLayout() {
+  const router = useRouter();
   return (
     <Tabs
       screenOptions={{
@@ -16,7 +17,7 @@ export default function ClientLayout() {
         options={{
           title: "Trang chủ",
           tabBarIcon: ({ color }) => (
-            <FontAwesome name="home" size={24} color={color} />
+            <FontAwesome name="home" size={24} color={color} onPress={() => router.push("/home")}/>
           ),
         }}
       />
@@ -56,7 +57,7 @@ export default function ClientLayout() {
         options={{
           title: "Hồ sơ",
           tabBarIcon: ({ color }) => (
-            <Ionicons name="person-outline" size={24} color={color}/>
+            <Ionicons name="person-outline" size={24} color={color} onPress={() => router.push("/(tabs)/(client)/profile")}/>
           ),
         }}
       />

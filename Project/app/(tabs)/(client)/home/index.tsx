@@ -1,6 +1,7 @@
-import { getAllProvinces } from "@/apis/province.api";
-import { getAllRooms } from "@/apis/room.api";
 import ProvinceItem from "@/components/item/ProvinceItem";
+import { useProvinces } from "@/hooks/useProvinces";
+import { useReviews } from "@/hooks/useReviews";
+import { useRooms } from "@/hooks/useRooms";
 import { ProvinceResponse } from "@/interface/province";
 import { RoomResponse } from "@/interface/room";
 import {
@@ -9,14 +10,12 @@ import {
   Ionicons,
   MaterialIcons,
 } from "@expo/vector-icons";
-import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import React from "react";
 import {
   ActivityIndicator,
   FlatList,
   Image,
-  ScrollView,
   StatusBar,
   Text,
   TextInput,
@@ -25,132 +24,99 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const bestHotels = [
-  {
-    id: 1,
-    name: "Malon Greens",
-    location: "Mumbai, Maharashtra",
-    price: 120,
-    rating: 5.0,
-    reviews: 120,
-    image:
-      "https://images.unsplash.com/photo-1566073771259-6a8506099945?fit=crop&w=300&q=80",
-  },
-  {
-    id: 2,
-    name: "Fortune Land",
-    location: "Goa, Maharashtra",
-    price: 150,
-    rating: 4.5,
-    reviews: 90,
-    image:
-      "https://images.unsplash.com/photo-1582719508461-905c673771fd?fit=crop&w=300&q=80",
-  },
-];
+const HotelCardSmall = ({
+  room,
+  onPress,
+}: {
+  room: RoomResponse;
+  onPress: () => void;
+}) => {
+  // --- Gọi review hook cho từng phòng ---
+  const { data: reviews, isLoading } = useReviews(room.hotelId, room.id);
 
-const nearbyHotels = [
-  {
-    id: 3,
-    name: "Malon Greens",
-    location: "Mumbai, Maharashtra",
-    price: 110,
-    rating: 4.0,
-    reviews: 80,
-    image:
-      "https://images.unsplash.com/photo-1566073771259-6a8506099945?fit=crop&w=200&q=80",
-  },
-  {
-    id: 4,
-    name: "Sabro Prime",
-    location: "Mumbai, Maharashtra",
-    price: 90,
-    rating: 5.0,
-    reviews: 76,
-    image:
-      "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?fit=crop&w=200&q=80",
-  },
-  {
-    id: 5,
-    name: "Peradise Mint",
-    location: "Mumbai, Maharashtra",
-    price: 120,
-    rating: 4.0,
-    reviews: 115,
-    image:
-      "https://images.unsplash.com/photo-1587061949409-02df43d75b3d?fit=crop&w=200&q=80",
-  },
-];
+  // --- Tính trung bình sao ---
+  const averageRating =
+    reviews && reviews.length > 0
+      ? reviews.reduce((sum: number, r: any) => sum + r.rating, 0) /
+        reviews.length
+      : 0;
 
-// --- Component con: Card Khách Sạn (nhỏ) ---
-const HotelCardSmall = ({ room, onPress }: { room: RoomResponse, onPress: () => void }) => (
-  <TouchableOpacity className="flex-row items-center bg-white rounded-2xl shadow p-3 mb-4" onPress={onPress}>
-    <Image source={{ uri: room.imageUrl }} className="w-20 h-20 rounded-xl" />
-    <View className="flex-1 ml-3">
-      <Text className="text-base font-bold text-gray-800">{room.title}</Text>
-      <View className="flex-row items-center mt-1">
-        <MaterialIcons name="location-pin" size={14} color="#888" />
-        <Text className="text-xs text-gray-500 ml-1">{room.hotelName}</Text>
+  return (
+    <TouchableOpacity
+      className="flex-row items-center bg-white rounded-2xl shadow p-3 mb-4"
+      onPress={onPress}
+    >
+      <Image
+        source={{ uri: room.imageUrl }}
+        className="w-20 h-20 rounded-xl mr-3"
+      />
+      <View className="flex-1">
+        <Text
+          className="text-base font-bold text-gray-800 mb-1"
+          numberOfLines={1}
+          ellipsizeMode="tail"
+        >
+          {room.title}
+        </Text>
+
+        <View className="flex-row items-center mb-2">
+          <MaterialIcons
+            name="location-pin"
+            size={14}
+            color="#888"
+            style={{ marginTop: 2 }}
+          />
+          <Text
+            className="text-xs text-gray-500 ml-1 flex-shrink"
+            numberOfLines={1}
+            ellipsizeMode="tail"
+            style={{ flexShrink: 1 }}
+          >
+            {room.hotelName}
+          </Text>
+        </View>
+
+        {isLoading ? (
+          <ActivityIndicator size="small" color="#504DE4" />
+        ) : (
+          <View className="flex-row items-center gap-1">
+            <FontAwesome
+              name="star"
+              size={14}
+              color="#FFD700"
+              style={{ marginTop: 2 }}
+            />
+            <Text
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              style={{ flexShrink: 1}}
+              className="flex-row gap-2"
+            >
+              <Text className="font-bold text-black">
+                {averageRating.toFixed(1)}{" "}
+              </Text>
+              <Text className="text-gray-500">
+                ({reviews?.length || 0} lượt đánh giá)
+              </Text>
+            </Text>
+          </View>
+        )}
       </View>
-      <View className="flex-row items-center mt-2">
-        <FontAwesome name="star" size={14} color="#FFD700" />
-        <Text className="text-sm font-bold text-gray-700 ml-1">5.0</Text>
-        <Text className="text-xs text-gray-500 ml-1">(0 Reviews)</Text>
-      </View>
-    </View>
-    <Text className="text-xl font-bold text-gray-900 mt-2">
-      {room.price.toLocaleString("vi-VN", {
-        style: "currency",
-        currency: "VND",
-      })}
-      <Text className="text-base font-normal text-gray-500">/đêm</Text>
-    </Text>
-  </TouchableOpacity>
-);
 
-// --- Component con: Card Khách Sạn (lớn) ---
-const HotelCardLarge = ({ hotel }: { hotel: any }) => (
-  <TouchableOpacity className="bg-white rounded-2xl shadow-md w-64 mr-4">
-    <Image
-      source={{ uri: hotel.image }}
-      className="w-full h-48 rounded-t-2xl"
-    />
-    <TouchableOpacity className="absolute top-3 right-3 bg-white/70 p-1.5 rounded-full">
-      <Ionicons name="heart-outline" size={20} color="#333" />
+      <Text className="text-md font-bold text-gray-900 ml-3 mt-2">
+        {room.price.toLocaleString("vi-VN", {
+          style: "currency",
+          currency: "VND",
+        })}
+        <Text className="text-base font-normal text-gray-500">/đêm</Text>
+      </Text>
     </TouchableOpacity>
-    <View className="p-4">
-      <Text className="text-lg font-bold text-gray-800">{hotel.name}</Text>
-      <View className="flex-row items-center mt-1">
-        <FontAwesome name="star" size={14} color="#FFD700" />
-        <Text className="text-sm font-bold text-gray-700 ml-1">
-          {hotel.rating.toFixed(1)}
-        </Text>
-        <Text className="text-xs text-gray-500 ml-1">
-          ({hotel.reviews} Reviews)
-        </Text>
-      </View>
-      <View className="flex-row items-center mt-1">
-        <MaterialIcons name="location-pin" size={14} color="#888" />
-        <Text className="text-xs text-gray-500 ml-1">{hotel.location}</Text>
-      </View>
-      <View className="mt-2">
-        <Text className="text-lg font-bold text-primary">
-          ${hotel.price}
-          <Text className="text-sm font-normal text-gray-500">/night</Text>
-        </Text>
-      </View>
-    </View>
-  </TouchableOpacity>
-);
+  );
+};
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { data: rooms } = useQuery({
-    queryFn: async () => {
-      const response = await getAllRooms();
-      return response.data;
-    },
-    queryKey: ["rooms"],
-  });
+  const { data: rooms } = useRooms();
 
   const handlePress = (id: number) => {
     router.push({
@@ -161,26 +127,17 @@ export default function HomeScreen() {
     });
   };
 
-  const handleDetail = (id: number) => {
+  const handleDetail = (id: number, hotelId: number) => {
     router.push({
       pathname: "/(tabs)/(client)/home/room/roomDetail/[roomId]",
       params: {
+        hotelId: hotelId,
         roomId: id,
       },
     });
-  }
+  };
 
-  const {
-    data: provinces,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryFn: async () => {
-      const response = await getAllProvinces();
-      return response.data;
-    },
-    queryKey: ["provinces"],
-  });
+  const { data: provinces, isLoading, isError } = useProvinces();
 
   if (isLoading) {
     return <ActivityIndicator size="large" color="#504DE4" className="mt-10" />;
@@ -235,43 +192,49 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* --- 2. Nội dung có thể cuộn --- */}
-      <ScrollView
+      <FlatList
         className="flex-1"
-        contentContainerStyle={{ paddingBottom: 20 }}
+        data={rooms}
+        keyExtractor={(item: RoomResponse) => item.id.toString()}
         showsVerticalScrollIndicator={false}
-      >
-        {/* --- 3. Danh mục Địa điểm --- */}
-        <View className="mt-6">
-          <FlatList
-            horizontal={true}
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 16 }}
-            data={provinces}
-            keyExtractor={(item: ProvinceResponse) => item.id.toString()}
-            renderItem={({ item }: { item: ProvinceResponse }) => (
-              <ProvinceItem pro={item} onPress={() => handlePress(item.id)} />
-            )}
-          />
-        </View>
-
-        <View className="mt-8 px-4">
-          {/* Tiêu đề section */}
-          <View className="flex-row justify-between items-center mb-4">
-            <Text className="text-xl font-bold text-gray-800">
-              Danh sách phòng
-            </Text>
+        contentContainerStyle={{ paddingBottom: 20 }}
+        renderItem={({ item }: { item: RoomResponse }) => (
+          <View className="px-4">
+            <HotelCardSmall
+              room={item}
+              onPress={() => handleDetail(item.id, item.hotelId)}
+            />
           </View>
+        )}
+        ListHeaderComponent={
+          <>
+            <View className="mt-6">
+              <FlatList
+                horizontal={true}
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingHorizontal: 16 }}
+                data={provinces}
+                keyExtractor={(item: ProvinceResponse) => item.id.toString()}
+                renderItem={({ item }: { item: ProvinceResponse }) => (
+                  <ProvinceItem
+                    pro={item}
+                    onPress={() => handlePress(item.id)}
+                  />
+                )}
+              />
+            </View>
 
-          <FlatList
-            data={rooms}
-            keyExtractor={(item: RoomResponse) => item.id.toString()}
-            renderItem={({ item }: { item: RoomResponse }) => (
-              <HotelCardSmall room={item} onPress={() => handleDetail(item.id)}/>
-            )}
-          />
-        </View>
-      </ScrollView>
+            {/* --- Tiêu đề section 'Danh sách phòng' --- */}
+            <View className="mt-8 px-4">
+              <View className="flex-row justify-between items-center mb-4">
+                <Text className="text-xl font-bold text-gray-800">
+                  Danh sách phòng
+                </Text>
+              </View>
+            </View>
+          </>
+        }
+      />
     </SafeAreaView>
   );
 }

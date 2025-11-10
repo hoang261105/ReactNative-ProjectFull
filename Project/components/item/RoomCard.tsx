@@ -1,9 +1,18 @@
-import { RoomResponse } from '@/interface/room'
-import { FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons'
-import React from 'react'
-import { Image, Text, TouchableOpacity, View } from 'react-native'
+import { useReviews } from '@/hooks/useReviews';
+import { RoomResponse } from '@/interface/room';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import React from 'react';
+import { Image, Text, TouchableOpacity, View } from 'react-native';
+import StarRating from './StarRating';
 
 export default function RoomCard({ room, onPress }: {room: RoomResponse, onPress: () => void}) {
+  const { data: reviews, isLoading } = useReviews(room.hotelId, room.id);
+
+  const averageRating =
+    reviews && reviews.length > 0
+      ? reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length
+      : 0;
+
   return (
     <TouchableOpacity className="bg-white rounded-2xl shadow-lg mb-6 overflow-hidden" onPress={onPress}>
     {/* Phần ảnh */}
@@ -22,13 +31,9 @@ export default function RoomCard({ room, onPress }: {room: RoomResponse, onPress
     <View className="p-4">
       {/* Rating */}
       <View className="flex-row items-center">
-        <FontAwesome name="star" size={16} color="#F59E0B" />
-        <FontAwesome name="star" size={16} color="#F59E0B" />
-        <FontAwesome name="star" size={16} color="#F59E0B" />
-        <FontAwesome name="star" size={16} color="#F59E0B" />
-        <FontAwesome name="star" size={16} color="#F59E0B" />
-        <Text className="text-sm font-bold text-gray-700 ml-2">0</Text>
-        <Text className="text-sm text-gray-500 ml-1.5">(0 Reviews)</Text>
+        <StarRating rating={averageRating} size={20}/>
+        <Text className="text-sm font-bold text-gray-700 ml-2">{averageRating.toFixed(1)}</Text>
+        <Text className="text-sm text-gray-500 ml-1.5">({reviews?.length || 0} lượt đánh giá)</Text>
       </View>
 
       {/* Tên phòng */}

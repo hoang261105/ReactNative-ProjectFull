@@ -1,5 +1,5 @@
 import { loginUser } from "@/apis/auth.api";
-import { UserLogin } from "@/interface/interface";
+import { UserLogin } from "@/interface/user";
 import { Feather, FontAwesome } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useMutation } from "@tanstack/react-query";
@@ -44,8 +44,10 @@ export default function LoginScreen() {
       await AsyncStorage.setItem(
         "user",
         JSON.stringify({
+          id: res.data.id,
           fullName: res.data.fullName,
           email: res.data.email,
+          avatar: res.data.avatar,
           phoneNumber: res.data.phoneNumber,
         })
       );
@@ -69,8 +71,8 @@ export default function LoginScreen() {
         }
       } else {
         Alert.alert(
-          "Lỗi mạng!",
-          error.message || "Không thể kết nối đến máy chủ."
+          "Thất bại!",
+          "Email hoặc mật khẩu không đúng."
         );
       }
     },
