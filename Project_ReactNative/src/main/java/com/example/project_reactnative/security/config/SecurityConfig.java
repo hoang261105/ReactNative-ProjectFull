@@ -31,12 +31,14 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
-                .formLogin(form -> form.disable())
-                .httpBasic(basic -> basic.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/v1/auth/login",
                                 "/api/v1/auth/register",
+                                "/api/v1/auth/forgot-password",
+                                "/api/v1/auth/verify-otp",
+                                "/api/v1/auth/reset-password",
+                                "/api/v1/auth/refresh-token",
                                 "/api/v1/users/**",
                                 "/api/v1/rooms/**",
                                 "/api/v1/rooms/{roomId}/images/{imageId}",
@@ -46,7 +48,10 @@ public class SecurityConfig {
                                 "/api/v1/hotels/{hotelId}/rooms",
                                 "/api/v1/reviews",
                                 "/api/v1/bookings",
-                                "/api/v1/payment-methods"
+                                "/api/v1/bookings/{bookingId}/confirm",
+                                "/api/v1/payment-methods",
+                                "/api/v1/bookings/room/{roomId}/booked-dates",
+                                "/api/v1/bookings/{id}/cancel"
                         )
                         .permitAll()
                         .anyRequest().authenticated()

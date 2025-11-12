@@ -21,7 +21,6 @@ public class UserProfile {
 
     private boolean gender;
 
-    private MultipartFile file;
     private String avatar;
 
     @NotBlank(message = "Số điện thoại không được để trống!")

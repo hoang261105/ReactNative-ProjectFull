@@ -31,8 +31,8 @@ public class UserController {
         return new ResponseEntity<>(new APIResponse<>(true, "Lấy chi tiết user thành công", authService.getUserById(id)), HttpStatus.OK);
     }
 
-    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<APIResponse<User>> updateUser(@PathVariable Long id, @Valid @ModelAttribute UserProfile userProfile) {
+    @PutMapping(value = "/{id}")
+    public ResponseEntity<APIResponse<User>> updateUser(@PathVariable Long id, @Valid @RequestBody UserProfile userProfile) {
         return new ResponseEntity<>(new APIResponse<>(true, "Cập nhật thành công!", authService.updateUser(id, userProfile)), HttpStatus.OK);
     }
 }

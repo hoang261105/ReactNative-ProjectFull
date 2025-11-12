@@ -31,6 +31,8 @@ public class User {
 
     private boolean gender;
 
+    private String otp;
+
     private String avatar;
 
     @Column(length = 20, nullable = false, unique = true)
@@ -38,6 +40,8 @@ public class User {
 
     @Column(nullable = false)
     private LocalDate dateOfBirth;
+
+    private LocalDateTime otpExpiredAt;
 
     private LocalDateTime createdAt = LocalDateTime.now();
 

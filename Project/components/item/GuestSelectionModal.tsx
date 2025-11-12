@@ -40,7 +40,7 @@ export default function GuestSelectionModal({ isVisible, onClose, onNext, isFrom
 
   useEffect(() => {
     const fetchRangeDate = async () => {
-      if (!isFromPayment) return; // chỉ load nếu đến từ Payment
+      if (!isFromPayment) return; 
       try {
         const stored = await AsyncStorage.getItem("people");
         if (stored) {

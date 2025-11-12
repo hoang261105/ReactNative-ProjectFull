@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 
@@ -17,23 +18,24 @@ public class JWTProvider {
     @Value("${jwt_secret}")
     private String jwtSecret;
 
-    @Value("${jwt_expire}")
-    private int jwtExpire;
+    @Value("${jwt.expiration}")
+    private Long jwtExpiration;
 
-    @Value("${jwt_refresh}")
-    private int jwtRefresh;
+    @Value("${jwt.refresh.expiration}")
+    private Long refreshExpiration;
 
+    // 🔑 Tạo Key cho HS512
     private Key getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(this.jwtSecret);
+        byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
     public String generateToken(String email){
         Date now = new Date();
         return Jwts.builder()
-                .setSubject(email)
-                .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + jwtExpire))
+                .subject(email)
+                .issuedAt(now)
+                .expiration(new Date(now.getTime() + jwtExpiration))
                 .signWith(getSigningKey())
                 .compact();
     }
@@ -41,9 +43,7 @@ public class JWTProvider {
     private Claims parseClaims(String token) {
         return Jwts.parser()
                 .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .build().parseSignedClaims(token).getPayload();
     }
 
     public boolean validateToken(String token){
@@ -68,12 +68,12 @@ public class JWTProvider {
         return parseClaims(token).getSubject();
     }
 
-    public String generateRefreshToken(String email, int refreshDurationMs) {
+    public String generateRefreshToken(String email) {
         Date now = new Date();
         return Jwts.builder()
-                .setSubject(email)
-                .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + refreshDurationMs))
+                .subject(email)
+                .issuedAt(now)
+                .expiration(new Date(now.getTime() + refreshExpiration))
                 .signWith(getSigningKey())
                 .compact();
     }

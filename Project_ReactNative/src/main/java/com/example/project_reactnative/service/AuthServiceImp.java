@@ -92,6 +92,7 @@ public class AuthServiceImp implements AuthService {
             );
 
             String accessToken = jwtProvider.generateToken(authentication.getName());
+            String refreshToken = jwtProvider.generateRefreshToken(authentication.getName());
 
             return new JWTResponse(
                     user.getId(),
@@ -100,7 +101,8 @@ public class AuthServiceImp implements AuthService {
                     user.getAvatar(),
                     user.getPhoneNumber(),
                     authentication.getAuthorities(),
-                    accessToken
+                    accessToken,
+                    refreshToken
             );
         } catch (AuthenticationException e) {
             return null;
@@ -136,24 +138,13 @@ public class AuthServiceImp implements AuthService {
             throw new CustomValidationException(errors);
         }
 
-        if (userProfile.getFile() != null && !userProfile.getFile().isEmpty()) {
-            if(userProfile.getAvatar() == null || userProfile.getAvatar().isEmpty()){
-                String imageUrl = cloudinaryService.uploadFile(userProfile.getFile());
-                user.setAvatar(imageUrl);
-            }else{
-                user.setAvatar(userProfile.getAvatar());
-            }
-        } else {
-            user.setAvatar(user.getAvatar());
-        }
-
         user.setFullName(userProfile.getFullName());
         user.setEmail(userProfile.getEmail());
         user.setPhoneNumber(userProfile.getPhoneNumber());
         user.setGender(userProfile.isGender());
+        user.setAvatar(userProfile.getAvatar());
         user.setDateOfBirth(userProfile.getDateOfBirth());
 
-        System.out.println(userProfile);
         return authRepository.save(user);
     }
 
