@@ -33,9 +33,9 @@ const GuestCounterRow = ({ title, subtitle, count, onDecrement, onIncrement, dec
 }
 
 export default function GuestSelectionModal({ isVisible, onClose, onNext, isFromPayment = false}: any) {
-  const [adults, setAdults] = useState(0); 
-  const [children, setChildren] = useState(0); 
-  const [infants, setInfants] = useState(0);
+  const [adults, setAdults] = useState(1); 
+  const [children, setChildren] = useState(1); 
+  const [infants, setInfants] = useState(1);
 
 
   useEffect(() => {

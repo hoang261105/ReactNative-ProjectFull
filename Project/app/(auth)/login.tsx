@@ -89,7 +89,7 @@ export default function LoginScreen() {
       } else {
         Alert.alert(
           "Thất bại!",
-          "Email hoặc mật khẩu không đúng."
+          "Đăng nhập thất bại!"
         );
       }
     },
@@ -113,7 +113,7 @@ export default function LoginScreen() {
   };
 
   const hanldeForgotPassword = () => {
-    if (error.email) {
+    if (!inputValue.email) {
       Alert.alert("Lỗi", "Vui lòng nhập email trước khi tiếp tục.");
       return;
     }
@@ -172,22 +172,20 @@ export default function LoginScreen() {
           </View>
 
           {/* Email */}
-          <View className="flex-row items-center bg-[#F9F9F9] border border-[#E0E0E0] rounded-lg px-3">
-            <Feather name="mail" size={20} color="#888" />
-            <TextInput
-              className="flex-1 h-[50px] text-[16px] text-[#333] ml-2"
-              placeholder="Nhập email"
-              placeholderTextColor="#AAA"
-              onChangeText={(text) => handleChange("email", text)}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              value={inputValue.email}
-            />
-          </View>
-          {error.email ? <Text className="text-red-500 mt-1">{error.email}</Text> : null}
-
-          {/* Password */}
-          <View className="flex-row items-center bg-[#F9F9F9] border border-[#E0E0E0] rounded-lg px-3 mt-2">
+          <View className="flex-row gap-3">
+            <View className="flex-row items-center bg-[#F9F9F9] border border-[#E0E0E0] rounded-lg px-3 flex-1">
+              <Feather name="mail" size={20} color="#888" />
+              <TextInput
+                className="flex-1 h-[50px] text-[16px] text-[#333] ml-2"
+                placeholder="Nhập email"
+                placeholderTextColor="#AAA"
+                onChangeText={(text) => handleChange("email", text)}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                value={inputValue.email}
+              />
+            </View>
+          <View className="flex-row flex-1 items-center bg-[#F9F9F9] border border-[#E0E0E0] rounded-lg px-3">
             <Feather name="lock" size={20} color="#888" />
             <TextInput
               className="flex-1 h-[50px] text-[16px] text-[#333] ml-2"
@@ -205,7 +203,12 @@ export default function LoginScreen() {
               />
             </TouchableOpacity>
           </View>
-          {error.password ? <Text className="text-red-500 mt-1">{error.password}</Text> : null}
+          </View>
+          {/* {error.email ? <Text className="text-red-500 mt-1">{error.email}</Text> : null} */}
+
+          {/* Password */}
+          
+          {/* {error.password ? <Text className="text-red-500 mt-1">{error.password}</Text> : null} */}
 
           {/* Forgot password */}
           <TouchableOpacity onPress={hanldeForgotPassword}>

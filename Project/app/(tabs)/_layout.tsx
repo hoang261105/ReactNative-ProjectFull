@@ -1,4 +1,4 @@
-import { FontAwesome, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { Tabs, useRouter } from 'expo-router';
 import React from 'react';
 
@@ -23,31 +23,11 @@ export default function ClientLayout() {
       />
 
       <Tabs.Screen
-        name='favourite'
-        options={{
-          title: "Yêu thích",
-          tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="bookmark-outline" size={24} color={color}/>
-          ),
-        }}
-      />
-
-      <Tabs.Screen
         name='booking'
         options={{
           title: "Đặt phòng",
           tabBarIcon: ({ color }) => (
             <Ionicons name="clipboard-outline" size={28} color={color}/>
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name='notification'
-        options={{
-          title: "Thông báo",
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="notifications" size={24} color={color} />
           ),
         }}
       />

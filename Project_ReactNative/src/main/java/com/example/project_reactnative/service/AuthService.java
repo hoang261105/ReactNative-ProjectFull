@@ -20,4 +20,6 @@ public interface AuthService {
     UserResponse getUserById(Long id);
 
     User updateUser(Long id, UserProfile userProfile);
+
+    User getUserByEmail(String email);
 }

@@ -74,6 +74,8 @@ public class AuthServiceImp implements AuthService {
                 .gender(userRequest.isGender())
                 .dateOfBirth(userRequest.getDateOfBirth())
                 .createdAt(LocalDateTime.now())
+                .otp(null)
+                .otpExpiredAt(null)
                 .build();
         return authRepository.save(user);
     }
@@ -146,6 +148,12 @@ public class AuthServiceImp implements AuthService {
         user.setDateOfBirth(userProfile.getDateOfBirth());
 
         return authRepository.save(user);
+    }
+
+    @Override
+    public User getUserByEmail(String email) {
+        return authRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User không tồn tại với email: " + email));
     }
 
     public UserResponse convertToResponse(User user) {
